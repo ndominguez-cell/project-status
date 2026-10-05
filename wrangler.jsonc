@@ -15,8 +15,8 @@
   "vars": {
     // Cloudflare Access application (Zero Trust > Access > Applications). Both must be set
     // in production; when set, every request needs a valid Access JWT or it is rejected.
-    "CF_ACCESS_TEAM_DOMAIN": "", // e.g. "myteam.cloudflareaccess.com"
-    "CF_ACCESS_AUD": "", // the application's AUD tag
-    "PUBLIC_SITE_URL": "" // canonical origin, e.g. "https://project-hub.example.com"
+    "CF_ACCESS_TEAM_DOMAIN": "ngu-team.cloudflareaccess.com",
+    "CF_ACCESS_AUD": "1860be58bb22f9ad18d6114bbb7ca7b0e2107ff646cc149706c5c7d52c3828a9",
+    "PUBLIC_SITE_URL": "https://project-hub.ndominguez.workers.dev"
   }
 }
