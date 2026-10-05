@@ -9,7 +9,7 @@ export async function verifyAccessToken(
   teamDomain: string,
   audience: string,
 ): Promise<AccessIdentity | null> {
-  const issuer = `https://${teamDomain}`;
+  const issuer = `https://${teamDomain.trim().replace(/^https?:\/\//i, '').replace(/\/+$/, '')}`;
   let jwks = jwksByIssuer.get(issuer);
   if (!jwks) {
     jwks = createRemoteJWKSet(new URL(`${issuer}/cdn-cgi/access/certs`));

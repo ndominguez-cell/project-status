@@ -59,3 +59,10 @@ test('rejects tokens missing the subject or email claim', async () => {
 test('rejects malformed tokens', async () => {
   assert.equal(await verifyAccessToken('not-a-jwt', TEAM, AUD), null);
 });
+
+test('accepts the team domain pasted with a scheme or trailing slash', async () => {
+  const token = await sign({ sub: 'user-123', email: 'me@example.com' });
+  const expected = { userId: 'user-123', email: 'me@example.com' };
+  assert.deepEqual(await verifyAccessToken(token, `https://${TEAM}`, AUD), expected);
+  assert.deepEqual(await verifyAccessToken(token, ` https://${TEAM}/ `, AUD), expected);
+});
