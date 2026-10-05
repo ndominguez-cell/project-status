@@ -52,17 +52,14 @@ Until the Access variables are set, the deployed site rejects every request (it 
 
 ## GitHub integration (Phase 2)
 
-Create a GitHub App with the minimum permissions needed for repository metadata, contents, pull requests, issues, checks/actions summaries, and installation repository discovery. Configure these server-only values as Worker secrets (`npx wrangler secret put <NAME>`):
+A private, read-only GitHub App syncs commits, branches, pull requests, issues, Actions runs, and contributors into a cache that the project **GitHub** and **Branches** tabs display. Signed webhooks keep it fresh, and a cron job (every 15 minutes) reconciles the stalest projects. The **Integrations** page discovers repositories, auto-links ones that match existing projects, and lets you track or ignore the rest.
 
-- `GITHUB_APP_ID`
-- `GITHUB_APP_PRIVATE_KEY`
-- `GITHUB_WEBHOOK_SECRET`
-
-Never prefix secrets with `NEXT_PUBLIC_`. Verify every webhook signature, store only installation/repository identifiers in the database, and keep GitHub authoritative for commits, branches, pull requests, issues, and Actions state.
+Setup (GitHub App, Worker secrets, and the Access bypass for the webhook path) is in [docs/GITHUB_APP_SETUP.md](docs/GITHUB_APP_SETUP.md). The secrets are `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, and `GITHUB_WEBHOOK_SECRET` (`npx wrangler secret put <NAME>`); never commit them or prefix them with `NEXT_PUBLIC_`. GitHub stays authoritative for repository facts, and Project Hub-owned fields are never overwritten.
 
 ## Security model
 
 - Every data read and mutation includes the authenticated owner ID.
+- GitHub webhooks are verified with an HMAC signature before any write, deduplicated by delivery ID, and size-limited. The GitHub App is read-only, and its private key lives only in a Worker secret.
 - Authentication and authorization checks run on the server. The Cloudflare Access JWT is verified on every request (signature, issuer, audience, expiry); identity headers alone are never trusted.
 - Secret values are never accepted or displayed.
 - Destructive deletion requires explicit confirmation; archive is the normal retirement path.

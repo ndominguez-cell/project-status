@@ -1,9 +1,13 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "project-hub",
-  "main": "vinext/server/fetch-handler",
+  "main": "worker/index.ts",
   "compatibility_date": "2026-05-15",
   "compatibility_flags": ["nodejs_compat"],
+  "triggers": {
+    // Reconciles the stalest tracked repositories; each run syncs at most GITHUB_SYNC_BATCH projects.
+    "crons": ["*/15 * * * *"]
+  },
   "d1_databases": [
     {
       "binding": "DB",
@@ -17,6 +21,9 @@
     // in production; when set, every request needs a valid Access JWT or it is rejected.
     "CF_ACCESS_TEAM_DOMAIN": "ngu-team.cloudflareaccess.com",
     "CF_ACCESS_AUD": "1860be58bb22f9ad18d6114bbb7ca7b0e2107ff646cc149706c5c7d52c3828a9",
-    "PUBLIC_SITE_URL": "https://project-hub.ndominguez.workers.dev"
+    "PUBLIC_SITE_URL": "https://project-hub.ndominguez.workers.dev",
+    // Slug of your GitHub App (github.com/apps/<slug>); used for the install link. App ID, private key, and
+    // webhook secret are Worker secrets: `wrangler secret put GITHUB_APP_ID | GITHUB_APP_PRIVATE_KEY | GITHUB_WEBHOOK_SECRET`.
+    "GITHUB_APP_SLUG": ""
   }
 }

@@ -1,3 +1,10 @@
 # Local-only overrides read by `npm run dev` (copy to .dev.vars). Never commit .dev.vars.
 # Signed-in email used on localhost when Cloudflare Access is not configured.
 DEV_AUTH_EMAIL=you@example.com
+
+# Optional: exercise the GitHub integration locally against a fake GitHub server.
+# GITHUB_APP_ID=12345
+# GITHUB_WEBHOOK_SECRET=dev-webhook-secret
+# GITHUB_APP_SLUG=your-dev-app
+# GITHUB_API_URL=http://localhost:4010
+# GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"

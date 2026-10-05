@@ -11,7 +11,7 @@ The architecture separates four concerns:
 3. `lib/` owns lifecycle constants, checklist templates, progress calculation, next-action recommendation, and read models.
 4. `db/` owns the relational schema and the single D1 access boundary.
 
-GitHub is intentionally the source of truth for repository-native facts. Project Hub stores only links and user-owned metadata in Phase 1. Phase 2 adds a GitHub App adapter and synchronized cache for branch, pull-request, issue, commit, and Actions summaries.
+GitHub is intentionally the source of truth for repository-native facts. Phase 1 stored only links and user-owned metadata. Phase 2 adds a GitHub App adapter and a synchronized cache for branch, pull-request, issue, commit, Actions, and contributor summaries.
 
 ### Why D1 and platform sign-in for the first deployment
 
@@ -32,8 +32,11 @@ The schema is normalized around `users` and `projects`:
 - `project_tasks`: lightweight work and blockers that do not replace GitHub Issues.
 - `project_notes`: durable project context and handoff notes.
 - `project_activity`: append-only user and integration event summaries.
+- `github_installations` and `github_repositories`: App installations and the repositories they expose, with a `PENDING`, `TRACKED`, or `IGNORED` decision and an optional link to a project. Only identifiers and metadata are stored, never credentials.
+- `github_pull_requests`, `github_issues`, `github_commits`, `github_workflow_runs`, and `github_contributors`: synced, replace-on-sync caches of GitHub-authoritative facts.
+- `github_webhook_deliveries`: delivery IDs (kept 7 days) so redelivered webhooks are processed once.
 
-`project_health` is not a separate table in the MVP. The current derived/overridden state lives on `projects`, while changes belong in `project_activity`. GitHub repository details are not duplicated into a dedicated cache until synchronization exists.
+`project_health` is not a separate table in the MVP. The current derived/overridden state lives on `projects`, while changes belong in `project_activity`. GitHub repository details live in the dedicated `github_*` cache tables added in Phase 2; the `projects` row keeps only the repository-native summary fields.
 
 The generated migration is under `drizzle/`. Foreign keys cascade project-owned records, common owner/stage and project/status reads are indexed, and owner/slug plus integration/branch identities are unique.
 
@@ -47,7 +50,8 @@ The generated migration is under `drizzle/`. Foreign keys cascade project-owned 
 | `/projects/[slug]` | Protected project workspace with 12 requested tabs |
 | `/stash` | Pause context, completion, next action, resume, and archive controls |
 | `/activity` | Cross-project activity timeline |
-| `/integrations` | Integration boundary and GitHub Phase 2 contract |
+| `/integrations` | GitHub App connection, repository discovery, track/ignore decisions, and sync controls |
+| `/api/github/webhook` | Public, signature-verified GitHub webhook receiver (Access bypass; see docs/GITHUB_APP_SETUP.md) |
 | `/settings` | Security and secret-handling model |
 
 Project detail tabs: Overview, GitHub, Branches, Checklist, Deployment, Environment, APIs, Database, Documentation, Tasks, Activity, and Notes.
@@ -96,11 +100,14 @@ Future deployment adapters (Vercel, Netlify, Railway, Cloud Run, Supabase) imple
 - Manual repository, technology, API/secret-name, database, and deployment inventory
 - Loading, empty, not-found, and error states
 
-### Phase 2
+### Phase 2 — implemented
 
-- GitHub App installation and least-privilege repository access
-- Repository discovery, ignore/archive decisions, synchronization, branches, commits, PRs, issues, contributors, and Actions health
-- Webhook ingestion plus scheduled reconciliation and stale-branch rules
+- GitHub App installation and least-privilege (read-only) repository access: `lib/github/app-auth.ts` signs app JWTs (PKCS#1 or PKCS#8 keys) and mints short-lived installation tokens that are cached in memory only.
+- Repository discovery with track/ignore decisions: `github_installations` and `github_repositories`; repositories whose name matches an existing project link automatically.
+- Synchronization: one GraphQL query plus a few REST calls per repository (`lib/github/snapshot.ts`) normalized into `project_branches`, `github_pull_requests`, `github_issues`, `github_commits`, `github_workflow_runs`, and `github_contributors`, written atomically per project in a single D1 batch (`lib/github/sync-store.ts`). Repository-native project fields refresh; Project Hub-owned fields and branch purpose notes are preserved.
+- Webhook ingestion (`app/api/github/webhook/route.ts`, `lib/github/webhook.ts`): HMAC verification before any write, delivery deduplication in `github_webhook_deliveries`, activity entries, and a targeted re-sync per event.
+- Scheduled reconciliation: `worker/index.ts` wraps the vinext handler with a `scheduled` handler (cron `*/15 * * * *`) that refreshes installations and syncs the stalest `GITHUB_SYNC_BATCH` projects.
+- Stale-branch and health rules (`lib/github/health.ts`): branches idle 30+ days, failing default-branch CI, pull requests idle 14+ days, and no pushes in 90+ days produce warnings and a suggested health that is displayed but never applied automatically.
 
 ### Phase 3
 
