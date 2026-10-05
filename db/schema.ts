@@ -185,3 +185,115 @@ export const projectActivity = sqliteTable(
   },
   (table) => [index('activity_project_created_idx').on(table.projectId, table.createdAt)],
 );
+
+export const githubInstallations = sqliteTable('github_installations', {
+  id: integer('id').primaryKey(),
+  ownerId: text('owner_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  accountLogin: text('account_login').notNull(),
+  accountType: text('account_type').notNull().default('User'),
+  repositorySelection: text('repository_selection').notNull().default('selected'),
+  suspendedAt: integer('suspended_at', { mode: 'timestamp_ms' }),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+});
+
+export const githubRepositories = sqliteTable(
+  'github_repositories',
+  {
+    repoId: integer('repo_id').primaryKey(),
+    installationId: integer('installation_id').notNull().references(() => githubInstallations.id, { onDelete: 'cascade' }),
+    ownerId: text('owner_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    fullName: text('full_name').notNull(),
+    defaultBranch: text('default_branch'),
+    isPrivate: integer('is_private', { mode: 'boolean' }).notNull().default(false),
+    isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
+    projectId: text('project_id').references(() => projects.id, { onDelete: 'set null' }),
+    decision: text('decision').notNull().default('PENDING'),
+    discoveredAt: integer('discovered_at', { mode: 'timestamp_ms' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  },
+  (table) => [
+    uniqueIndex('github_repos_owner_name_unique').on(table.ownerId, table.fullName),
+    index('github_repos_installation_idx').on(table.installationId),
+  ],
+);
+
+export const githubPullRequests = sqliteTable(
+  'github_pull_requests',
+  {
+    projectId: text('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+    number: integer('number').notNull(),
+    title: text('title').notNull(),
+    isDraft: integer('is_draft', { mode: 'boolean' }).notNull().default(false),
+    url: text('url').notNull(),
+    author: text('author'),
+    headBranch: text('head_branch'),
+    baseBranch: text('base_branch'),
+    reviewDecision: text('review_decision'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.projectId, table.number] })],
+);
+
+export const githubIssues = sqliteTable(
+  'github_issues',
+  {
+    projectId: text('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+    number: integer('number').notNull(),
+    title: text('title').notNull(),
+    url: text('url').notNull(),
+    author: text('author'),
+    labelsJson: text('labels_json').notNull().default('[]'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.projectId, table.number] })],
+);
+
+export const githubCommits = sqliteTable(
+  'github_commits',
+  {
+    projectId: text('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+    sha: text('sha').notNull(),
+    message: text('message').notNull(),
+    authorName: text('author_name'),
+    authorLogin: text('author_login'),
+    committedAt: integer('committed_at', { mode: 'timestamp_ms' }).notNull(),
+    url: text('url').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.projectId, table.sha] }), index('github_commits_project_time_idx').on(table.projectId, table.committedAt)],
+);
+
+export const githubWorkflowRuns = sqliteTable(
+  'github_workflow_runs',
+  {
+    projectId: text('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+    runId: integer('run_id').notNull(),
+    name: text('name'),
+    branch: text('branch'),
+    event: text('event'),
+    status: text('status').notNull(),
+    conclusion: text('conclusion'),
+    url: text('url').notNull(),
+    startedAt: integer('started_at', { mode: 'timestamp_ms' }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.projectId, table.runId] }), index('github_runs_project_time_idx').on(table.projectId, table.startedAt)],
+);
+
+export const githubContributors = sqliteTable(
+  'github_contributors',
+  {
+    projectId: text('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+    login: text('login').notNull(),
+    contributions: integer('contributions').notNull(),
+    isBot: integer('is_bot', { mode: 'boolean' }).notNull().default(false),
+  },
+  (table) => [primaryKey({ columns: [table.projectId, table.login] })],
+);
+
+export const githubWebhookDeliveries = sqliteTable('github_webhook_deliveries', {
+  deliveryId: text('delivery_id').primaryKey(),
+  event: text('event').notNull(),
+  receivedAt: integer('received_at', { mode: 'timestamp_ms' }).notNull(),
+});

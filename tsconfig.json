@@ -28,6 +28,7 @@
     "hooks/**/*.ts",
     "lib/**/*.ts",
     "tests/**/*.ts",
+    "worker/**/*.ts",
     "drizzle.config.ts",
     "next.config.ts",
     "vite.config.ts"
