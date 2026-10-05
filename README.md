@@ -27,7 +27,7 @@ cp .dev.vars.example .dev.vars   # optional: pick the email you are signed in as
 npm run dev
 ```
 
-`npm run dev` applies the checked-in migrations to a local D1 database (`.wrangler/state`) and starts the app. On `localhost` you are signed in as `DEV_AUTH_EMAIL` (default `dev@localhost`); this fallback only applies to loopback hosts and only while Cloudflare Access is not configured. Database schema changes belong in `db/schema.ts`; run `npm run db:generate` and inspect the new append-only migration before deployment.
+`npm run dev` applies the checked-in migrations to a local D1 database (`.wrangler/state`) and starts the app. On `localhost` you are signed in as `DEV_AUTH_EMAIL` (default `dev@localhost`); `npm run dev` blanks the production Access vars from `wrangler.jsonc`, and the fallback only ever applies to loopback hosts, so a deployed Worker never uses it. Database schema changes belong in `db/schema.ts`; run `npm run db:generate` and inspect the new append-only migration before deployment.
 
 ## Validation
 
