@@ -24,6 +24,6 @@
     "PUBLIC_SITE_URL": "https://project-hub.ndominguez.workers.dev",
     // Slug of your GitHub App (github.com/apps/<slug>); used for the install link. App ID, private key, and
     // webhook secret are Worker secrets: `wrangler secret put GITHUB_APP_ID | GITHUB_APP_PRIVATE_KEY | GITHUB_WEBHOOK_SECRET`.
-    "GITHUB_APP_SLUG": ""
+    "GITHUB_APP_SLUG": "project-hub-ndominguez"
   }
 }
