@@ -8,8 +8,8 @@
     {
       "binding": "DB",
       "database_name": "project-hub",
+      "database_id": "77b0a836-ce01-4f0b-895d-72ccacf247c8",
       "migrations_dir": "drizzle"
-      // After `npx wrangler d1 create project-hub`, add: "database_id": "<id it prints>"
     }
   ],
   "vars": {
