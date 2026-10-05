@@ -2,7 +2,7 @@
 
 ## 1. Architecture overview
 
-Project Hub is a private, server-rendered command center built with TypeScript, React 19, the Next.js App Router programming model through Vinext, Tailwind CSS, and reusable shadcn primitives. The deployed application uses platform-managed ChatGPT sign-in and Cloudflare D1. Every database read and mutation is scoped by the authenticated user ID on the server.
+Project Hub is a private, server-rendered command center built with TypeScript, React 19, the Next.js App Router programming model through Vinext, Tailwind CSS, and reusable shadcn primitives. The deployed application runs on Cloudflare Workers with Cloudflare Access sign-in and Cloudflare D1. Every database read and mutation is scoped by the authenticated user ID on the server.
 
 The architecture separates four concerns:
 
@@ -15,7 +15,7 @@ GitHub is intentionally the source of truth for repository-native facts. Project
 
 ### Why D1 and platform sign-in for the first deployment
 
-The requested stack suggested Supabase and Vercel unless another choice was compelling. This hosted private site already supplies authenticated identity, relational persistence, migrations, and private access without introducing a second login system or requiring user credentials. The application keeps database access behind `db/index.ts` and identity behind `app/chatgpt-auth.ts`, so a later move to Supabase PostgreSQL and Supabase Auth is isolated. A Supabase migration must enable RLS on every exposed table and pair every policy with an `owner_id = auth.uid()` predicate; client roles should receive only the operations they need.
+The requested stack suggested Supabase and Vercel unless another choice was compelling. Cloudflare Workers, D1, and Access together supply authenticated identity, relational persistence, migrations, and private access without introducing a second login system or requiring user credentials. The application keeps database access behind `db/index.ts` and identity behind `app/auth.ts`, so a later move to Supabase PostgreSQL and Supabase Auth is isolated. A Supabase migration must enable RLS on every exposed table and pair every policy with an `owner_id = auth.uid()` predicate; client roles should receive only the operations they need.
 
 ## 2. Database schema
 

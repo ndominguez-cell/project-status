@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "project-hub",
+  "main": "vinext/server/fetch-handler",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "project-hub",
+      "migrations_dir": "drizzle"
+      // After `npx wrangler d1 create project-hub`, add: "database_id": "<id it prints>"
+    }
+  ],
+  "vars": {
+    // Cloudflare Access application (Zero Trust > Access > Applications). Both must be set
+    // in production; when set, every request needs a valid Access JWT or it is rejected.
+    "CF_ACCESS_TEAM_DOMAIN": "", // e.g. "myteam.cloudflareaccess.com"
+    "CF_ACCESS_AUD": "", // the application's AUD tag
+    "PUBLIC_SITE_URL": "" // canonical origin, e.g. "https://project-hub.example.com"
+  }
+}

@@ -1,11 +1,11 @@
-import { requireChatGPTUser } from '@/app/chatgpt-auth';
+import { requireUser } from '@/app/auth';
 import { AppShell } from '@/components/project-hub/app-shell';
 import { ProjectWizard } from '@/components/project-hub/project-wizard';
 
 export const dynamic = 'force-dynamic';
 
 export default async function NewProjectPage() {
-  const user = await requireChatGPTUser('/projects/new');
+  const user = await requireUser();
   return (
     <AppShell active="projects" user={user}>
       <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">

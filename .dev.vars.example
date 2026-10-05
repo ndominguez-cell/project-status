@@ -1,0 +1,3 @@
+# Local-only overrides read by `npm run dev` (copy to .dev.vars). Never commit .dev.vars.
+# Signed-in email used on localhost when Cloudflare Access is not configured.
+DEV_AUTH_EMAIL=you@example.com

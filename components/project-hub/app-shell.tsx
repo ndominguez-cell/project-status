@@ -8,7 +8,7 @@ import {
   Plus,
   Settings,
 } from 'lucide-react';
-import { chatGPTSignOutPath, type ChatGPTUser } from '@/app/chatgpt-auth';
+import type { AppUser } from '@/app/auth';
 import { cn } from '@/lib/utils';
 
 const navigation = [
@@ -26,7 +26,7 @@ export function AppShell({
 }: {
   children: React.ReactNode;
   active: string;
-  user: ChatGPTUser;
+  user: AppUser;
   projectCount?: number;
 }) {
   const initials = user.displayName.split(/\s|@/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('');
@@ -57,7 +57,7 @@ export function AppShell({
         <div className="m-3 rounded-xl border border-border bg-card p-3">
           <div className="flex items-center gap-3">
             <div className="grid size-9 place-items-center rounded-full bg-secondary text-xs font-semibold">{initials || 'PH'}</div>
-            <div className="min-w-0 flex-1"><p className="truncate text-xs font-medium">{user.displayName}</p><a className="text-[11px] text-muted-foreground hover:text-foreground" href={chatGPTSignOutPath('/')}>Sign out</a></div>
+            <div className="min-w-0 flex-1"><p className="truncate text-xs font-medium">{user.displayName}</p>{user.signOutPath ? <a className="text-[11px] text-muted-foreground hover:text-foreground" href={user.signOutPath}>Sign out</a> : null}</div>
           </div>
         </div>
       </aside>

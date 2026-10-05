@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: { default: 'Project Hub', template: '%s · Project Hub' },
   description: 'A secure command center for software, AI, automation, and experimental projects.',
-  metadataBase: new URL(process.env.PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL(process.env.PUBLIC_SITE_URL || 'http://localhost:3000'),
   openGraph: {
     title: 'Project Hub',
     description: 'Every project. One clear next move.',

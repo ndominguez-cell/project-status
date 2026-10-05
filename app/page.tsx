@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { AlertTriangle, ArrowRight, Boxes, CircleCheck, Clock3, FolderKanban, GitPullRequest, Plus, Rocket, Settings2 } from 'lucide-react';
-import { requireChatGPTUser } from '@/app/chatgpt-auth';
+import { requireUser } from '@/app/auth';
 import { AppShell } from '@/components/project-hub/app-shell';
 import { ProjectCard } from '@/components/project-hub/project-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { getProjectsForOwner, getRecentActivity } from '@/lib/project-data';
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const user = await requireChatGPTUser('/');
+  const user = await requireUser();
   const [projects, activity] = await Promise.all([getProjectsForOwner(user.userId), getRecentActivity(user.userId)]);
   const active = projects.filter((project) => ['PLANNING', 'SETUP', 'BUILDING', 'TESTING', 'MAINTENANCE'].includes(project.stage));
   const needsAttention = projects.filter((project) => project.health !== 'HEALTHY');
