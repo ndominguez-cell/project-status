@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "project-hub",
+  "main": "vinext/server/fetch-handler",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "project-hub",
+      "database_id": "77b0a836-ce01-4f0b-895d-72ccacf247c8",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "vars": {
+    // Cloudflare Access application (Zero Trust > Access > Applications). Both must be set
+    // in production; when set, every request needs a valid Access JWT or it is rejected.
+    "CF_ACCESS_TEAM_DOMAIN": "ngu-team.cloudflareaccess.com",
+    "CF_ACCESS_AUD": "1860be58bb22f9ad18d6114bbb7ca7b0e2107ff646cc149706c5c7d52c3828a9",
+    "PUBLIC_SITE_URL": "https://project-hub.ndominguez.workers.dev"
+  }
+}

@@ -2,12 +2,12 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { getChatGPTUser } from '@/app/chatgpt-auth';
+import { getUser } from '@/app/auth';
 import { getD1 } from '@/db';
 import { DEFAULT_CHECKLIST, PROJECT_HEALTH, PROJECT_STAGES, slugify } from '@/lib/project-hub';
 
 async function requireActionUser() {
-  const user = await getChatGPTUser();
+  const user = await getUser();
   if (!user) throw new Error('Authentication required.');
   return user;
 }

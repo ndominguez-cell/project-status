@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Archive, ArrowRight, Boxes } from 'lucide-react';
 import { changeProjectStage } from '@/app/actions';
-import { requireChatGPTUser } from '@/app/chatgpt-auth';
+import { requireUser } from '@/app/auth';
 import { AppShell } from '@/components/project-hub/app-shell';
 import { Button } from '@/components/ui/button';
 import { getProjectsForOwner, getStashedProjects } from '@/lib/project-data';
@@ -9,7 +9,7 @@ import { getProjectsForOwner, getStashedProjects } from '@/lib/project-data';
 export const dynamic = 'force-dynamic';
 
 export default async function StashPage() {
-  const user = await requireChatGPTUser('/stash');
+  const user = await requireUser();
   const [stashed, allProjects] = await Promise.all([getStashedProjects(user.userId), getProjectsForOwner(user.userId)]);
   return (
     <AppShell active="stash" user={user} projectCount={allProjects.length}>

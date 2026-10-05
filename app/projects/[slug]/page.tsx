@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Archive, ArrowLeft, Check, Circle, ExternalLink, FolderGit2, GitBranch, Pause, Play, Plus } from 'lucide-react';
 import { addProjectNote, addProjectTask, changeProjectStage, toggleChecklistItem, toggleProjectTask, updateProject } from '@/app/actions';
-import { getChatGPTUser, requireChatGPTUser } from '@/app/chatgpt-auth';
+import { getUser, requireUser } from '@/app/auth';
 import { AppShell } from '@/components/project-hub/app-shell';
 import { DeleteProjectButton } from '@/components/project-hub/delete-project-button';
 import { Badge } from '@/components/ui/badge';
@@ -26,7 +26,7 @@ type PageProps = { params: Promise<{ slug: string }>; searchParams: Promise<{ ta
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const user = await getChatGPTUser();
+  const user = await getUser();
   if (!user) return { title: 'Project', openGraph: { images: [] }, twitter: { images: [] } };
   const data = await getProjectForOwner(user.userId, slug);
   return {
@@ -44,7 +44,7 @@ export default async function ProjectPage({ params, searchParams }: PageProps) {
 }
 
 async function ProjectWorkspace({ slug, tab }: { slug: string; tab: (typeof tabs)[number] }) {
-  const user = await requireChatGPTUser(`/projects/${slug}?tab=${tab}`);
+  const user = await requireUser();
   const data = await getProjectForOwner(user.userId, slug);
   if (!data) notFound();
   const { project } = data;

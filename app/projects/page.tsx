@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
-import { requireChatGPTUser } from '@/app/chatgpt-auth';
+import { requireUser } from '@/app/auth';
 import { AppShell } from '@/components/project-hub/app-shell';
 import { ProjectExplorer } from '@/components/project-hub/project-explorer';
 import { getProjectsForOwner } from '@/lib/project-data';
@@ -8,7 +8,7 @@ import { getProjectsForOwner } from '@/lib/project-data';
 export const dynamic = 'force-dynamic';
 
 export default async function ProjectsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const user = await requireChatGPTUser('/projects');
+  const user = await requireUser();
   const [projects, query] = await Promise.all([getProjectsForOwner(user.userId), searchParams.then((params) => params.q ?? '')]);
   return (
     <AppShell active="projects" user={user} projectCount={projects.length}>
