@@ -243,7 +243,7 @@ export async function reconcileStale(deps: SyncDeps, limit = deps.config.syncBat
        JOIN projects p ON p.id = r.project_id
        LEFT JOIN project_integrations i ON i.project_id = p.id AND i.provider = 'GITHUB'
        WHERE r.decision = 'TRACKED' AND p.archived_at IS NULL AND p.repository_full_name IS NOT NULL
-       ORDER BY COALESCE(i.last_synced_at, 0) ASC, p.id ASC LIMIT ?`,
+       ORDER BY COALESCE(i.updated_at, 0) ASC, p.id ASC LIMIT ?`,
     )
     .bind(limit)
     .all<{ id: string; owner_id: string; full_name: string }>();

@@ -197,7 +197,7 @@ test('reconcile syncs the stalest tracked projects first and respects the batch 
     projects: repos.map((repo) => ({ id: `p-${repo.fullName.slice(5)}`, fullName: repo.fullName })),
   });
   await refreshInstallations(deps, 'user-1');
-  exec("INSERT INTO project_integrations (id, project_id, provider, status, last_synced_at, created_at, updated_at) VALUES ('i1', 'p-a', 'GITHUB', 'CONNECTED', 500, 1, 1), ('i2', 'p-b', 'GITHUB', 'CONNECTED', 100, 1, 1), ('i3', 'p-c', 'GITHUB', 'CONNECTED', 900, 1, 1)");
+  exec("INSERT INTO project_integrations (id, project_id, provider, status, last_synced_at, created_at, updated_at) VALUES ('i1', 'p-a', 'GITHUB', 'CONNECTED', 500, 1, 500), ('i2', 'p-b', 'GITHUB', 'CONNECTED', 100, 1, 100), ('i3', 'p-c', 'GITHUB', 'CONNECTED', 900, 1, 900)");
 
   const results = await reconcileStale(deps, 2);
   assert.deepEqual(results.map((result) => result.projectId), ['p-d', 'p-b'], 'never-synced first, then oldest');
@@ -208,4 +208,17 @@ test('reconcile syncs the stalest tracked projects first and respects the batch 
   const next = await reconcileStale(deps, 10);
   assert.deepEqual(next.map((result) => result.projectId).sort(), ['p-b', 'p-d'], 'ignored repositories and archived projects are skipped');
   assert.deepEqual(query("SELECT project_id FROM project_integrations WHERE status = 'CONNECTED' AND last_synced_at = ? ORDER BY project_id", NOW), [{ project_id: 'p-b' }, { project_id: 'p-d' }]);
+});
+
+test('a project that keeps failing cannot starve the rest of the queue', async () => {
+  const repos = [makeRepo(1, 'nick/a'), makeRepo(2, 'nick/b')];
+  const { deps, query, installations } = setup({ installations: [{ id: 99, login: 'nick', repos }], projects: [{ id: 'p-a', fullName: 'nick/a' }, { id: 'p-b', fullName: 'nick/b' }] });
+  await refreshInstallations(deps, 'user-1');
+  installations[0].repos = installations[0].repos.filter((repo) => repo.id !== 1);
+
+  const first = await reconcileStale(deps, 1);
+  assert.deepEqual(first.map((result) => [result.projectId, result.ok]), [['p-a', false]]);
+  const second = await reconcileStale(deps, 1);
+  assert.deepEqual(second.map((result) => [result.projectId, result.ok]), [['p-b', true]], 'the failed project goes to the back of the line');
+  assert.deepEqual(query("SELECT project_id, status FROM project_integrations ORDER BY project_id"), [{ project_id: 'p-a', status: 'ERROR' }, { project_id: 'p-b', status: 'CONNECTED' }]);
 });
