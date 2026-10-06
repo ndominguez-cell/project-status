@@ -70,3 +70,13 @@ test('client flags rate limiting and maps GraphQL NOT_FOUND to 404', async () =>
   const empty = new GitHubClient({ token: 't', fetch: (async () => new Response(null, { status: 204 })) as typeof fetch });
   assert.equal(await empty.rest('/x'), null);
 });
+
+test('the client never calls fetch as a method (Workers throws Illegal invocation)', async () => {
+  const strictFetch = function (this: unknown) {
+    if (this !== undefined) throw new TypeError('Illegal invocation: function called with incorrect `this` reference.');
+    return Promise.resolve(Response.json({ ok: true }));
+  } as unknown as typeof fetch;
+  const client = new GitHubClient({ token: 't', fetch: strictFetch });
+  assert.deepEqual(await client.rest('/anything'), { ok: true });
+  assert.deepEqual(await client.graphql('query {}', {}).catch((error: unknown) => (error as Error).message), 'GitHub returned an empty GraphQL response.');
+});

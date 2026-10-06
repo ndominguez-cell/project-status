@@ -27,7 +27,10 @@ export class GitHubClient {
   constructor(options: GitHubClientOptions) {
     this.token = options.token;
     this.apiBase = (options.apiBase ?? 'https://api.github.com').replace(/\/+$/, '');
-    this.fetchImpl = options.fetch ?? fetch;
+    // Workers throws "Illegal invocation" when the global fetch runs with a `this` other than undefined,
+    // which is what `this.fetchImpl(...)` would give it. Calling through a plain closure avoids that.
+    const fetchFn = options.fetch ?? fetch;
+    this.fetchImpl = (input, init) => fetchFn(input, init);
   }
 
   private async request(path: string, init: RequestInit = {}) {
